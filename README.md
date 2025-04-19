@@ -1,6 +1,6 @@
 # BlueField DPU Setup Notes
 
-Unofficial notes for setting up and configuring NVIDIA BlueField DPUs on custom server systems (non-DGX platforms).
+Unofficial notes for setting up and configuring NVIDIA BlueField DPUs on custom server systems (non-DGX platforms), including support for Proxmox VE.
 
 ## Terminology
 
@@ -252,7 +252,7 @@ nvidia-smi
 
 > **Note**: Build `macsec` driver issue
 >
-> Strangely, Ubuntu 24.04's kernel binary package doesn't seem to include the `macsec` driver, causing `mlx5_ib` not being able to load
+> Strangely, Ubuntu 24.04's kernel binary package doesn't seem to include the `macsec` driver, causing `mlx5_ib` not being able to load. This may be observed by running `sudo mst status -v`, `sudo dmesg | grep mlx5`, and `ibstatus`.
 >
 > To mitigate the issue, we build the `macsec` driver ourselves:
 >
@@ -275,6 +275,7 @@ nvidia-smi
 > # macsec module should be available
 > modinfo macsec
 > sudo modprobe macsec
+> lsmod | grep macsec
 > ```
 
 Connect to the DPU via RShim: [[ref](https://docs.nvidia.com/networking/display/bluefielddpuosv460/deploying+bluefield+software+using+bfb+from+host#src-2571331391_DeployingBlueFieldSoftwareUsingBFBfromHost-FirmwareUpgrade)]
@@ -311,6 +312,14 @@ sudo bfb-install --bfb bf-bundle-2.9.2-31_25.02_ubuntu-22.04_prod.bfb --rshim /d
 > wget https://content.mellanox.com/BlueField/FW-Bundle/bf-fwbundle-2.9.2-31_25.02-prod.bfb
 > sudo bfb-install --bfb bf-fwbundle-2.9.2-31_25.02-prod.bfb --rshim rshim0
 > ```
+
+Other DOCA tools and commands for debugging:
+
+```sh
+cd /opt/mellanox/doca/tools
+doca_caps --list-devs
+doca_bench --device 01:00.0 --query device-capabilities
+```
 
 ### DPU
 
@@ -412,8 +421,12 @@ References:
 - [Table of Common Redfish Commands](https://docs.nvidia.com/networking/display/bluefieldbmcv2410ltsu1/table+of+common+redfish+commands)
 - [NVIDIA BlueField Reset and Reboot Procedures](https://docs.nvidia.com/doca/sdk/nvidia+bluefield+reset+and+reboot+procedures/index.html)
 
+## Examples
+
+Please refer to the [examples](./examples/README.md) for more details.
+
 ## Contributors & Acknowledgements
 
-Contributors: [@tsw303005](https://github.com/tsw303005), [Aiden128](https://github.com/Aiden128), [@YiPrograms](https://github.com/YiPrograms), and [@j3soon](https://github.com/j3soon).
+Contributors: [@tsw303005](https://github.com/tsw303005), [@Aiden128](https://github.com/Aiden128), [@YiPrograms](https://github.com/YiPrograms), and [@j3soon](https://github.com/j3soon).
 
 This note has been made possible through the support of [LSA Lab](https://github.com/NTHU-LSALAB), and [NVIDIA AI Technology Center (NVAITC)](https://github.com/NVAITC).
