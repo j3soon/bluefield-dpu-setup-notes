@@ -331,6 +331,11 @@ doca_caps --list-devs
 doca_bench --device 01:00.0 --query device-capabilities
 ```
 
+```sh
+sudo ibdev2netdev -v
+sudo mlxlink -d /dev/mst/mt41692_pciconf0
+```
+
 ### DPU
 
 Execute the following commands on the DPU.
@@ -430,6 +435,29 @@ References:
 - [Reset Control](https://docs.nvidia.com/networking/display/bluefieldbmcv2410ltsu1/reset+control)
 - [Table of Common Redfish Commands](https://docs.nvidia.com/networking/display/bluefieldbmcv2410ltsu1/table+of+common+redfish+commands)
 - [NVIDIA BlueField Reset and Reboot Procedures](https://docs.nvidia.com/doca/sdk/nvidia+bluefield+reset+and+reboot+procedures/index.html)
+
+### Host2
+
+Given another host connected with InfiniBand, you can ping it from the DPU:
+
+On the other host `host2`:
+
+```sh
+ibstat # check `Base lid`
+sudo ibping -S
+```
+
+On the DPU:
+
+```sh
+sudo ibnetdiscover # You should see the same lid
+ibstat # check `CA` and `Port`
+sudo ibping -C <CA> -P <PORT> -L <LID>
+# For an example:
+# sudo ibping -C mlx5_0 -P 1 -L 13
+```
+
+You can also switch the server and client roles by running `ibping -S` on the DPU and `ibping -C <CA> -P <PORT> -L <LID>` on the other host.
 
 ## Examples
 
