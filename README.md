@@ -250,32 +250,42 @@ sudo sh cuda_12.8.0_570.86.10_linux.run
 nvidia-smi
 ```
 
-> **Note**: Build `macsec` driver issue
->
+Fix `macsec` driver issue:
+
 > Strangely, Ubuntu 24.04's kernel binary package doesn't seem to include the `macsec` driver, causing `mlx5_ib` not being able to load. This may be observed by running `sudo mst status -v`, `sudo dmesg | grep mlx5`, and `ibstatus`.
->
-> To mitigate the issue, we build the `macsec` driver ourselves:
->
-> ```bash
-> # Download macsec from kernel source
-> wget https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/net/macsec.c?h=v6.8 -O macsec.c
+
+To fix this issue, we build the `macsec` driver ourselves:
+
+```bash
+# Download macsec from kernel source
+wget https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/net/macsec.c?h=v6.8 -O macsec.c
+
+# Create Makefile
+cat << 'EOF' > Makefile
+obj-m += macsec.o
+all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+EOF
+
+make
+
+sudo cp macsec.ko /lib/modules/$(uname -r)/kernel/drivers/net
+sudo depmod -a
+
+# macsec module should be available
+modinfo macsec
+sudo modprobe macsec
+lsmod | grep macsec
+
+# Reload mlx5_core module
+sudo rmmod mlx5_core
+sudo modprobe mlx5_core
+```
+
+> Make sure to re-compile the macsec module if you encounter the following error when running `sudo modprobe macsec`:
 > 
-> # Create Makefile
-> cat << EOF > Makefile
-> obj-m += macsec.o
-> all:
-> 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
-> EOF
-> 
-> make
-> 
-> sudo cp macsec.ko /lib/modules/$(uname -r)/kernel/drivers/net
-> sudo depmod -a
-> 
-> # macsec module should be available
-> modinfo macsec
-> sudo modprobe macsec
-> lsmod | grep macsec
+> ```
+> modprobe: ERROR: could not insert 'macsec': Exec format error
 > ```
 
 Connect to the DPU via RShim: [[ref](https://docs.nvidia.com/networking/display/bluefielddpuosv460/deploying+bluefield+software+using+bfb+from+host#src-2571331391_DeployingBlueFieldSoftwareUsingBFBfromHost-FirmwareUpgrade)]
