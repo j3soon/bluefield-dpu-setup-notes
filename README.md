@@ -363,6 +363,24 @@ sudo /opt/mellanox/mlnx-fw-updater/mlnx_fw_updater.pl
 # Need to cold reboot the machine
 ```
 
+Launch [OpenSM](https://docs.nvidia.com/networking/display/mlnxofedv461000/opensm) on DPU for using InfiniBand on host side. Before this step, running `ibstat` on host will show `State: Down` and `Physical state: LinkUp`. Running `ibstat` on host will show `State: Up` after this step.
+
+```sh
+# Get the `Node GUID` from the corresponding CA
+ibstat
+
+# Run OpenSM with the Node GUID to recognize virtual ports on the host.
+sudo opensm -g <DPU_IB_NODE_GUID> -p 10
+# If there's another OpenSM running on other hosts, make sure to set the priority higher than those.
+# In our case, we have another OpenSM with priority 0 in the subnet, so we set our priority to 10.
+```
+
+>  InfiniBand in DPU Mode
+>
+> In DPU Mode, when operating with an InfiniBand network, OpenSM must be executed from the BlueField Arm side rather than the host side. Similarly, InfiniBand management tools such as `sminfo`, `ibdev2netdev`, and `ibnetdiscover` can only be used from the BlueField Arm side and are not accessible from the host side.
+>
+> -- [BlueField Modes of Operation](https://docs.nvidia.com/doca/sdk/bluefield+modes+of+operation/index.html#src-3421781520_id-.BlueFieldModesofOperationv2.10.0-InfiniBandinDPUMode)
+
 Resetting DPU: [[ref](https://docs.nvidia.com/networking/display/mftv4261lts/mstfwreset+%E2%80%93+loading+firmware+on+5th+generation+devices+tool)]
 
 ```bash
